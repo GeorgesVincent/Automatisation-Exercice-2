@@ -27,6 +27,39 @@ class PopulateDatabaseCommand extends Command
         $this->setDescription('Populate database');
     }
 
+    private function insertCompanies(int $number): string
+    {
+        $faker = \Faker\Factory::create("fr_FR");
+        $string = 'INSERT INTO `companies` VALUES ';
+        for ($i = 1; $i <= $number; $i++) {
+            $string .= "(". $i.",'".$faker->company. "','". $faker->phoneNumber. "','". $faker->email. "','". 
+            $faker->url. "','". $faker->imageUrl(). "', NOW(), NOW(), NULL),";
+        }
+        return rtrim($string, ',');
+    }
+
+    private function insertOffices(int $number): string
+    {
+        $faker = \Faker\Factory::create("fr_FR");
+        $string = 'INSERT INTO `offices` VALUES ';
+        for ($i = 1; $i <= $number; $i++) {
+            $string .= "(". $i.",'".$faker->company. "','". $faker->streetAddress. "','". $faker->city. "','". 
+            $faker->postcode. "','". $faker->country. "','". $faker->email. "','". $faker->phoneNumber. "',".rand(1, 3).", NOW(), NOW()),";
+        }
+        return rtrim($string, ',');
+    }
+    
+    private function insertEmployees(int $number): string
+    {
+        $faker = \Faker\Factory::create("fr_FR");
+        $string = 'INSERT INTO `employees` VALUES ';
+        for ($i = 1; $i <= $number; $i++) {
+            $string .= "(". $i.",'".$faker->firstName. "','". $faker->lastName. "',". rand(1, 3). ",'". 
+            $faker->email. "','". $faker->imageUrl(). "','". $faker->jobTitle. "', NOW(), NOW()),";
+        }
+        return rtrim($string, ',');
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output ): int
     {
         $output->writeln('Populate database...');
@@ -41,28 +74,11 @@ class PopulateDatabaseCommand extends Command
         $db->getConnection()->statement("SET FOREIGN_KEY_CHECKS=1");
 
 
-        $db->getConnection()->statement("INSERT INTO `companies` VALUES
-    (1,'Stack Exchange','0601010101','stack@exchange.com','https://stackexchange.com/','https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Verisure_information_technology_department_at_Ch%C3%A2tenay-Malabry_-_2019-01-10.jpg/1920px-Verisure_information_technology_department_at_Ch%C3%A2tenay-Malabry_-_2019-01-10.jpg', now(), now(), null),
-    (2,'Google','0602020202','contact@google.com','https://www.google.com','https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Google_office_%284135991953%29.jpg/800px-Google_office_%284135991953%29.jpg?20190722090506',now(), now(), null)
-        ");
+        $db->getConnection()->statement($this->insertCompanies(3));
 
-        $db->getConnection()->statement("INSERT INTO `offices` VALUES
-    (1,'Bureau de Nancy','1 rue Stanistlas','Nancy','54000','France','nancy@stackexchange.com',NULL,1, now(), now()),
-    (2,'Burea de Vandoeuvre','46 avenue Jeanne d\'Arc','Vandoeuvre','54500','France',NULL,NULL,1, now(), now()),
-    (3,'Siege sociale','2 rue de la primatiale','Paris','75000','France',NULL,NULL,2, now(), now()),
-    (4,'Bureau Berlinois','192 avenue central','Berlin','12277','Allemagne',NULL,NULL,2, now(), now())
-        ");
+        $db->getConnection()->statement($this->insertOffices(3));
 
-        $db->getConnection()->statement("INSERT INTO `employees` VALUES
-     (1,'Camille','La Chenille',1,'camille.la@chenille.com',NULL,'Ingénieur', now(), now()),
-     (2,'Albert','Mudhat',2,'albert.mudhat@aqume.net',NULL,'Superviseur', now(), now()),
-     (3,'Sylvie','Tesse',3,'sylive.tesse@factice.local',NULL,'PDG', now(), now()),
-     (4,'John','Doe',4,'john.doe@generique.org',NULL,'Testeur', now(), now()),
-     (5,'Jean','Bon',1,'jean@test.com',NULL,'Developpeur', now(), now()),
-     (6,'Anais','Dufour',2,'anais@aqume.net',NULL,'DBA', now(), now()),
-     (7,'Sylvain','Poirson',3,'sylvain@factice.local',NULL,'Administrateur réseau', now(), now()),
-     (8,'Telma','Thiriet',4,'telma@generique.org',NULL,'Juriste', now(), now())
-        ");
+        $db->getConnection()->statement($this->insertEmployees(10));
 
         $db->getConnection()->statement("update companies set head_office_id = 1 where id = 1;");
         $db->getConnection()->statement("update companies set head_office_id = 3 where id = 2;");
